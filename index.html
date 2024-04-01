@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width" initial-scale="1.0">
+        <title>Comment Widget App</title>
+        <style>
+            .comment-container {
+                margin-left: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="comment-widget">
+            <input type="text" id="comment-input" placeholder="Enter your comment">
+            <button id="comment-button">Comment</button>
+            <ul id="comment-list"></ul>
+        </div>
+        
+        <script>
+            //function to load comments from json file.
+            async function loadComments(){
+                try{
+                    
+                    const response=await fetch('comments.json');
+                    const comments=await response.json();
+                    
+                    comments.forEach(comment => {
+                        const commentList = document.getElementById('comment-list');
+                        const commentElement = createCommentElement(comment.text);
+                        commentList.appendChild(commentElement);
+                    });
+                }catch(error){
+                    console.log('error fetching comments:', error);
+                }
+            }
+
+            // Function to create a new comment element
+    function createCommentElement(commentText) {
+        const li = document.createElement('li');
+        li.textContent = commentText;
+
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Edit';
+        editButton.addEventListener('click', () => {
+            const newText = prompt('Enter new comment:', commentText);
+            if (newText !== null) {
+                li.textContent = newText;
+                updateComments();
+            }
+        });
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.addEventListener('click', () => {
+            li.remove();
+            updateComments();
+        });
+
+        li.appendChild(editButton);
+        li.appendChild(deleteButton);
+
+        return li;
+    }
+
+    // Function to add a new comment
+    function addComment() {
+        const commentInput = document.getElementById('comment-input');
+        const commentText = commentInput.value.trim();
+        if (commentText === '') {
+            alert('Please enter a comment');
+            return;
+        }
+        const commentList = document.getElementById('comment-list');
+        const commentElement = createCommentElement(commentText);
+        commentList.appendChild(commentElement);
+        updateComments();
+        commentInput.value = '';
+    }
+
+    // Function to update comments in JSON file
+    async function updateComments() {
+        const commentElements = document.querySelectorAll('#comment-list > li');
+        const comments = [];
+        commentElements.forEach(commentElement => {
+            comments.push({ text: commentElement.textContent });
+        });
+        try {
+            await fetch('comments.json', {
+                method: 'PUT', // Assuming you have a server endpoint to handle PUT requests
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(comments)
+            });
+        } catch (error) {
+            console.error('Error updating comments:', error);
+        }
+    }
+
+    // Add event listener to comment button
+    document.getElementById('comment-button').addEventListener('click', addComment);
+
+    // Load comments when the page loads
+    window.addEventListener('load', loadComments);
+        </script>
+        
+    </body>
+    
+</html>
+<!-- index.html -->
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fetch JSON Data Example</title>
+</head>
+<body>
+
+<button id="fetch-button">Fetch Data</button>
+<div id="data-container"></div>
+
+<script src="script.js"></script>
+</body>
+</html> -->
